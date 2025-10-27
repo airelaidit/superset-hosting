@@ -1,11 +1,23 @@
-# Use official Apache Superset image
+# Use the official Apache Superset image
 FROM apache/superset:latest
 
-# Expose port 8088 (Superset default)
-EXPOSE 8088
+# Set environment variables
+ENV SUPERSET_SECRET_KEY=mysecret123
+ENV ADMIN_USERNAME=admin
+ENV ADMIN_FIRST_NAME=Admin
+ENV ADMIN_LAST_NAME=User
+ENV ADMIN_EMAIL=admin@example.com
+ENV ADMIN_PASSWORD=admin123
 
-# Optional: Copy custom config if you want to enable public dashboards
-# COPY superset_config.py /app/pythonpath/
-
-# Run the Superset server
-CMD ["superset", "run", "-h", "0.0.0.0", "-p", "8088"]
+# Run commands to initialize Superset and create admin
+CMD bash -c "
+  superset db upgrade &&
+  superset fab create-admin \
+      --username \$ADMIN_USERNAME \
+      --firstname \$ADMIN_FIRST_NAME \
+      --lastname \$ADMIN_LAST_NAME \
+      --email \$ADMIN_EMAIL \
+      --password \$ADMIN_PASSWORD &&
+  superset init &&
+  superset run -h 0.0.0.0 -p 8088
+"
